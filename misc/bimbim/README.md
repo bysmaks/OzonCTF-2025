@@ -2,10 +2,9 @@
 
 ## Информация
 
-> NO NO NO MISTER FISH YOU ACTUALLY NEED TO READ PYTHON SOURCE CODE. Maybe python license too?
-> flag.txt located in the same directory as task.py
->
-> nc <ip> 9235
+NO NO NO MISTER GOSHA YOU ACTUALLY NEED TO READ PYTHON SOURCE CODE. Maybe python license too? flag.txt located in the same directory as task.py
+
+nc misc.ozon-ctf-2025.ru 9235
 
 ## Деплой
 

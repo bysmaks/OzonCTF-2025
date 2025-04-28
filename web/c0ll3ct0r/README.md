@@ -2,9 +2,9 @@
 
 ## Информация
 
-> Collect urls, earn flags!
->
-> http://{ip}:10015
+"Collect urls, earn flags!" - гласила вывезка на одном из новых модных складов
+
+https://collector.web.ozon-ctf-2025.ru
 
 ## Деплой
 

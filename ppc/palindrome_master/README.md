@@ -2,21 +2,18 @@
 
 ## Информация
 
-> А вы любите палиндромы? Вам предстоит из данного вам списка слов составить один палиндром. Все слова должны быть использованы. Слова нельзя изменять. Если слов несколько, они должны быть разделены пробелами.
->
-> Example:
->
-> ```
-> Round 1:
-> lprerystofrcbyhzygjtveeaugvtovkybarmgrdughymfceaglajevjxtpqdaqfs sfqadqptxjvejalgaecfmyhgudrgmrabykvotvguaeevtjgyzhybcrfotsyrerplgtvv vvtg
-> Your answer: sfqadqptxjvejalgaecfmyhgudrgmrabykvotvguaeevtjgyzhybcrfotsyrerplgtvv vvtg lprerystofrcbyhzygjtveeaugvtovkybarmgrdughymfceaglajevjxtpqdaqfs
-> ```
->
-> слова  `sfqadqptxjvejalgaecfmyhgudrgmrabykvotvguaeevtjgyzhybcrfotsyrerplgtvv vvtg lprerystofrcbyhzygjtveeaugvtovkybarmgrdughymfceaglajevjxtpqdaqfs` при конктенации образуют палиндром `sfqadqptxjvejalgaecfmyhgudrgmrabykvotvguaeevtjgyzhybcrfotsyrerplgtvvvvtglprerystofrcbyhzygjtveeaugvtovkybarmgrdughymfceaglajevjxtpqdaqfs`
->
-> ```
-> nc ip:5000
-> ```
+А вы любите палиндромы? Вам предстоит из данного вам списка слов составить один палиндром. Все слова должны быть использованы. Слова нельзя изменять. Если слов несколько, они должны быть разделены пробелами.
+
+Example:
+
+Round 1:
+lprerystofrcbyhzygjtveeaugvtovkybarmgrdughymfceaglajevjxtpqdaqfs sfqadqptxjvejalgaecfmyhgudrgmrabykvotvguaeevtjgyzhybcrfotsyrerplgtvv vvtg
+Your answer: sfqadqptxjvejalgaecfmyhgudrgmrabykvotvguaeevtjgyzhybcrfotsyrerplgtvv vvtg lprerystofrcbyhzygjtveeaugvtovkybarmgrdughymfceaglajevjxtpqdaqfs
+слова sfqadqptxjvejalgaecfmyhgudrgmrabykvotvguaeevtjgyzhybcrfotsyrerplgtvv vvtg lprerystofrcbyhzygjtveeaugvtovkybarmgrdughymfceaglajevjxtpqdaqfs при конктенации образуют палиндром sfqadqptxjvejalgaecfmyhgudrgmrabykvotvguaeevtjgyzhybcrfotsyrerplgtvvvvtglprerystofrcbyhzygjtveeaugvtovkybarmgrdughymfceaglajevjxtpqdaqfs
+
+Мда, не так Гоша представлял себе тест на разработчика
+
+nc ppc.ozon-ctf-2025.ru 5000
 
 ## Деплой
 

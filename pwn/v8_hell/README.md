@@ -2,12 +2,11 @@
 
 ## Информация
 
-> In ancient code, the flaws reside,
-> Old vulnerabilities, silent, deep,
-> Through years they linger, never hide,
-> Awaiting moments their watch to keep.
+In ancient code, the flaws reside, Old vulnerabilities, silent, deep, Through years they linger, never hide, Awaiting moments their watch to keep.
 
-> nc <ip>:13337
+Посмотрите, какой красивый стих сочинил Гоша, возможно он натолкнет вас на какую-то мысль...
+
+nc pwn.ozon-ctf-2025.ru 13337
 
 ## Деплой
 
