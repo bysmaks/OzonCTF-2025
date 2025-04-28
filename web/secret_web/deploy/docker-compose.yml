@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  web1:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "secretWebServer:192.168.9.228"
+    environment:
+      - DB_URL=postgresql://3pWoxVDHsApMGwO29T6DovbYUPKaRpPs:3pWoxVDHsApMGwO29T6DovbYUPKaRpPs@db:5432/3pWoxVDHsApMGwO29T6DovbYUPKaRpPs
+      - SECRET_KEY=vn43190v7VN0189vn401
+    networks:
+      hackernet:
+        ipv4_address: 192.168.9.9
+    depends_on:
+      - db
+    restart: always
+
+  web2:
+    build:
+      context: ./app2
+      dockerfile: Dockerfile
+    networks:
+      hackernet:
+        ipv4_address: 192.168.9.228
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 127.0.0.1:5555:8888
+    networks:
+      hackernet:
+        ipv4_address: 192.168.9.4
+    depends_on:
+      - web1
+    restart: always
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=3pWoxVDHsApMGwO29T6DovbYUPKaRpPs
+      - POSTGRES_PASSWORD=3pWoxVDHsApMGwO29T6DovbYUPKaRpPs
+      - POSTGRES_DB=3pWoxVDHsApMGwO29T6DovbYUPKaRpPs
+    networks:
+      hackernet:
+        ipv4_address: 192.168.9.12
+    restart: always
+
+volumes:
+  postgres_data:
+
+networks:
+  hackernet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.9.0/24

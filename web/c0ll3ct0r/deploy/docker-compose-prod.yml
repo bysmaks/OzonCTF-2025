@@ -1,0 +1,45 @@
+services:
+  c0ll3ct0r-app:
+    build:
+      dockerfile: Dockerfile
+    networks:
+      c0ll3ct0r-net:
+    ports:
+      - "127.0.0.1:10015:8080"  # Замените на порт вашего приложения
+    depends_on:
+      - c0ll3ct0r-postgres
+      - c0ll3ct0r-redis
+    restart: always
+    environment:
+      - FLAG=ozonctf{c0ll3ct0r_url_net_c0ll3ct0r_dom41n_h86d}
+      - JWT_SECRET=qkj23hksadsj12hjkhskjhajkhdkj12h3kjsjj231jahdjkahsjk21h3kj12hkjshdkjash3123
+      - ENVIRONMENT=production
+
+  c0ll3ct0r-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d
+    networks:
+      c0ll3ct0r-net:
+        aliases:
+          - postgres
+    restart: always
+
+  c0ll3ct0r-redis:
+    image: redis:7-alpine
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./acl.conf:/usr/local/etc/redis/acl.conf
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      c0ll3ct0r-net:
+        aliases:
+          - redis
+    restart: always
+
+networks:
+  c0ll3ct0r-net:

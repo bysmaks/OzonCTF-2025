@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>c0ll3ct0r</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+    <h1 class="animated-gradient">c0ll3ct0r</h1>
+    <p>Собирай url'ы и получай флаги!</p>
+</header>
+<main>
+    <section class="form-container">
+        <h2>Вход</h2>
+        <div class="error" id="login-error"></div>
+        <form id="login-form">
+            <input type="text" name="login" placeholder="Логин" required>
+            <input type="password" name="password" placeholder="Пароль" required>
+            <button type="submit" class="animated-gradient">Войти</button>
+        </form>
+    </section>
+    <section class="form-container">
+        <h2>Регистрация</h2>
+        <div class="error" id="signup-error"></div>
+        <form id="signup-form">
+            <input type="text" name="login" placeholder="Логин" required>
+            <input type="password" name="password" placeholder="Пароль" required>
+            <input type="password" name="confirm-password" placeholder="Подтвердите пароль" required>
+            <button type="submit" class="animated-gradient">Зарегистрироваться</button>
+        </form>
+    </section>
+</main>
+<script src="/static/index_script.js"></script>
+</body>
+</html>

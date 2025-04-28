@@ -1,0 +1,28 @@
+services:
+  c0ll3ct0r-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: always
+
+  c0ll3ct0r-redis:
+    image: redis:7-alpine
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./acl.conf:/usr/local/etc/redis/acl.conf
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    restart: always
+
+volumes:
+  postgres_data:
+  redis_data:

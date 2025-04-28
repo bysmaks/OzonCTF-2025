@@ -1,0 +1,20 @@
+forbidden_words = [
+    '.read()', 'exec', 'os', 'system', '__', 'subprocess', 'sh', 
+    'import', 'globals', 'locals', 'open', 'compile', 'input', 'lambda', 
+    'dir', 'getattr', 'setattr', 'delattr', 'vars', 'help', 'repr', 'print', 
+    'map', 'filter', 'reduce', 'exit', 'quit', 'traceback', 'sys', 'base64',
+    'memoryview', 'object', 'type', 'super', 'inspect', 'code', 'ast', 
+    'bin', 'hex', 'oct', 'bytearray', 'bytes', 'callable', 'classmethod',
+    'staticmethod', 'property', 'reload', 'dis', 'marshal', 'pickle', 'ctypes',
+    'configparser', 'tempfile', 'os.path', 'pathlib', 'socket', 'threading',
+    'multiprocessing', 'resource', 'signal', 'fcntl', 'pwd', 'grp', 'pty', 
+    'tty', 'uuid', 'hashlib', 'hmac', 'random', 'secrets', 'ssl', 'select', 
+    'selectors', 'termios', 'time', 'datetime', 'sched', 'logging', 'getpass',
+    'ascii', 'bytes', 'bytearray', 'format', 'fstring', 'globals',
+    'locals', 'exec', 'getattr', 'setattr', 'delattr', 'vars', 'dict',
+    'importlib', 'sys.modules', '__builtins__', '__loader__', '__package__',
+    '__spec__', '__name__', '__doc__', '__annotations__', '__globals__',
+    're', 'functools', 'itertools', 'operator', 'copy', 'deepcopy',
+    'warnings', 'contextlib', 'weakref', 'gc', 'site', 'configparser',
+    'io', 'tempfile', 'tarfile', 'zipfile', 'lzma', 'bz2', 'shutil'
+]

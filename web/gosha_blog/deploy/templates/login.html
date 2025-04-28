@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Вход - Гошин блог{% endblock %}
+
+{% block content %}
+    <h2>Вход</h2>
+    
+    <form action="{{ url_for('login') }}" method="POST">
+        <div>
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        
+        <div>
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <button type="submit">Войти</button>
+    </form>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <p>Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a></p>
+    </div>
+{% endblock %} 

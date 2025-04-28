@@ -1,0 +1,15 @@
+services:
+  antispam:
+    build: .
+    ports:
+      - "50051:50051"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - FLAG=ozonctf{4ut0m4t10n_r3duc3s_fru5s7r4t10n_ee25587b}
+    restart: always
+
+  redis:
+    image: "redis:alpine"
+    restart: always

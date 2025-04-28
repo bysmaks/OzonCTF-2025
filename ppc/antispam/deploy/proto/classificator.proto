@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package classificator;
+
+service Classificator {
+    rpc Register (Nothing) returns (Token);
+    rpc GetSample (Token) returns (Sample);
+    rpc SubmitSample (SubmitSampleRequest) returns (Nothing);
+    rpc GetFlag (Token) returns (FlagResult);
+}
+
+message Nothing {}
+
+message Token {
+    string token = 1;
+}
+
+message Sample {
+    string uid = 1;
+    string comment = 2;
+}
+
+message SubmitSampleRequest {
+    Token token = 1;
+    string uid = 2;
+
+    enum Class {
+        NEGATIVE = 0;
+        POSITIVE = 1;
+        SPAM = 2;
+    }
+    Class probable_class = 3;
+}
+
+message FlagResult {
+    string message = 1;
+}

@@ -1,0 +1,10 @@
+# Dockerfile для сервера
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY bot_server.py .
+
+RUN pip install paho-mqtt
+
+CMD ["python", "bot_server.py"]

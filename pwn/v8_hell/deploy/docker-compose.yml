@@ -1,0 +1,9 @@
+services:
+  v8_hell:
+    build: .
+    restart: unless-stopped
+    pids_limit: 512
+    mem_limit: 1024M
+    cpus: 1
+    ports:
+      - "13337:13337"

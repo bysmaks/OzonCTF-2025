@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная страница</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .card {
+            transition: transform 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: scale(1.05);
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">Товары</h1>
+
+        <div class="row">
+            {% for product in products %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="card-img-top" alt="product image">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text"><strong>{{ product.price }} ₽</strong></p>
+                            <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="btn btn-info">Подробнее</a>
+                            <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="POST" class="mt-2">
+                                <button type="submit" class="btn btn-primary">Добавить в корзину</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <a href="{{ url_for('main.show_cart') }}" class="btn btn-success mt-4">Перейти в корзину</a>
+        <a href="{{ url_for('main.add_product') }}" class="btn btn-info mt-4">Добавить товар</a>
+
+        <button class="btn btn-dark mt-4" onclick="showFact()">Показать случайный факт</button>
+        <p id="random-fact" class="mt-3 font-italic hidden"></p>
+
+        <button class="btn btn-danger mt-4" onclick="showSecret()">Секретная кнопка</button>
+        <p id="secret-msg" class="mt-3 text-danger hidden">Ты нашел пасхалку! 🎉</p>
+    </div>
+
+    <script>
+        function showFact() {
+            const facts = [
+                "Мандарины – символ удачи в Китае.",
+                "Самолет может разогнаться до 900 км/ч.",
+                "Яблоки содержат 25% воздуха, поэтому они плавают.",
+                "Хороший нож можно заточить до молекулярного уровня!",
+                "Современный сервер может обработать миллиарды запросов в день."
+            ];
+            let factElement = document.getElementById("random-fact");
+            factElement.textContent = facts[Math.floor(Math.random() * facts.length)];
+            factElement.classList.remove("hidden");
+        }
+
+        function showSecret() {
+            document.getElementById("secret-msg").classList.remove("hidden");
+        }
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

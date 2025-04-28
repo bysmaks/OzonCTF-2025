@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-form">
+    <h2>Register New User</h2>
+    <form id="registerForm">
+        <div class="form-group">
+            <label for="user_id">User ID:</label>
+            <input type="text" id="user_id" name="user_id" 
+                   pattern="[a-zA-Z0-9]{1,20}" 
+                   title="Letters and numbers only (1-20 chars)" 
+                   required
+                   autofocus>
+            <p class="form-hint">Minimum 1 character, letters and numbers only</p>
+        </div>
+        <button type="submit" class="btn">Register</button>
+    </form>
+    <div id="registerResult" class="result"></div>
+</div>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user_id = document.getElementById('user_id').value.trim();
+    const resultDiv = document.getElementById('registerResult');
+    
+    try {
+        const response = await fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            resultDiv.innerHTML = `
+                <div class="alert success">
+                    ${data.message}
+                    <p>Redirecting to your profile...</p>
+                </div>
+            `;
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 1000);
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert error">
+                    <strong>Error:</strong> ${data.error}
+                    ${response.status === 409 ? 
+                      '<p>Please choose a different User ID.</p>' : ''}
+                </div>
+            `;
+            document.getElementById('user_id').focus();
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `
+            <div class="alert error">
+                <strong>Network Error:</strong> ${error.message}
+            </div>
+        `;
+    }
+});
+</script>
+{% endblock %}

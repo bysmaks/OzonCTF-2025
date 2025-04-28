@@ -1,0 +1,14 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Копируем весь проект в контейнер
+COPY . .
+
+RUN pip install flask
+
+# Открываем порт 80 для веб-приложения
+EXPOSE 80
+
+# Запускаем приложение
+CMD ["python3", "main.py"]

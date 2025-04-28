@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Ваша корзина</h1>
+        {% if cart %}
+        <ul class="list-group mb-4">
+            {% for item in cart %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ item.name }} - {{ item.price }} руб.
+                    <form action="{{ url_for('main.remove_from_cart', product_id=item.id) }}" method="POST" class="ml-2">
+                        <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+        <h2 class="mb-4">Общая стоимость: {{ total_cost }} руб.</h2>
+        {% else %}
+        <p>Ваша корзина пуста.</p>
+        {% endif %}
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary mt-4">Вернуться к товарам</a>
+    </div>
+</body>
+</html>

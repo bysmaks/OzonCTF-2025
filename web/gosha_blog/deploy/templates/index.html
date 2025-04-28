@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Гошин блог{% endblock %}
+
+{% block content %}
+    {% if user.is_admin %}
+        <h2>ozonctf{n0_sql_inj3cti0n_f0r_y0u}</h2>
+    {% endif %}
+    {% if user %}
+        <div class="new-post">
+            <h2>Создать новый пост</h2>
+            <form action="{{ url_for('create_post') }}" method="POST">
+                <div>
+                    <input type="text" name="title" placeholder="Заголовок" required>
+                </div>
+                <div>
+                    <textarea name="content" placeholder="Содержание" required></textarea>
+                </div>
+                <button type="submit">Опубликовать</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <h2>Посты</h2>
+    {% for post in posts %}
+        <div class="post">
+            <h3>{{ post.title }}</h3>
+            <p>{{ post.content }}</p>
+            <small>Автор: {{ post.author }}</small>
+        </div>
+    {% endfor %}
+{% endblock %} 

@@ -1,0 +1,81 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_INITDB_ARGS=--max-connections=200
+    command: ["postgres", "-c", "max_connections=200"]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ctf_network
+
+  flask_app:
+    container_name: ${COMPOSE_PROJECT_NAME}_flask_app
+    build: ./flask_app
+    ports:
+      - "0.0.0.0:${FLASK_APP_PORT}:5000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/app/data:rw
+      - ./.env:/app/.env:ro  # Mount .env file as read-only
+    env_file:
+      - ./.env  # Use the .env file for environment variables
+    restart: unless-stopped
+    stop_signal: SIGINT
+    depends_on:
+      postgres:
+        condition: service_healthy
+      generic_ctf_task:
+        condition: service_started
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    mem_limit: 5G
+    memswap_limit: 5G
+    cpus: 5.0
+    pids_limit: 1000
+    networks:
+      - ctf_network
+  
+  generic_ctf_task:
+    container_name: ${COMPOSE_PROJECT_NAME}_local_stub
+    build: 
+      context: ./generic_ctf_task
+      dockerfile: Dockerfile
+    image: ${IMAGES_NAME}
+    environment:
+      - FLAG=${FLAG}
+    # Port mapping below is only for direct testing
+    # When deployed by flask_app, it will use dynamic ports in the 9000-10000 range
+    ports:
+      - "127.0.0.1:${DIRECT_TEST_PORT}:${PORT_IN_CONTAINER}"  # For direct testing access
+    security_opt:
+      - no-new-privileges:${ENABLE_NO_NEW_PRIVILEGES}
+    mem_limit: ${CONTAINER_MEMORY_LIMIT}
+    memswap_limit: ${CONTAINER_SWAP_LIMIT}
+    cpus: ${CONTAINER_CPU_LIMIT}
+    pids_limit: ${CONTAINER_PIDS_LIMIT}
+    networks:
+      - ctf_network
+
+networks:
+  ctf_network:
+    name: ${NETWORK_NAME}
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${NETWORK_SUBNET}
+
+volumes:
+  postgres_data:

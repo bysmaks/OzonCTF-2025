@@ -1,0 +1,5 @@
+flask
+gunicorn
+pyjwt
+redis
+requests

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-panel">
+    <h2>Admin Dashboard</h2>
+    
+    <div class="admin-features">
+        <div class="admin-card">
+            <h3>Internal API Access</h3>
+            <div class="api-form">
+                <input type="text" id="internalApiUrl" value="{{ internal_api }}" readonly>
+                <button onclick="copyToClipboard('internalApiUrl')" class="btn">
+                    Copy URL
+                </button>
+            </div>
+            <p class="note">{{ note }}</p>
+        </div>
+        
+        <div class="admin-card">
+            <h3>API Proxy</h3>
+            <form id="proxyForm">
+                <div class="form-group">
+                    <label for="url">URL:</label>
+                    <input type="text" id="url" name="url" required>
+                </div>
+                <button type="submit" class="btn">Send Request</button>
+            </form>
+            <div id="proxyResult" class="result"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('proxyForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const url = document.getElementById('url').value;
+    
+    try {
+        const response = await fetch('/internal_api', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url })
+        });
+        
+        const data = await response.text();
+        document.getElementById('proxyResult').innerHTML = `
+            <div class="alert">
+                <pre>${data}</pre>
+            </div>
+        `;
+    } catch (error) {
+        document.getElementById('proxyResult').innerHTML = `
+            <div class="alert error">
+                Request failed: ${error.message}
+            </div>
+        `;
+    }
+});
+
+function copyToClipboard(elementId) {
+    const copyText = document.getElementById(elementId);
+    copyText.select();
+    document.execCommand("copy");
+    alert("Copied to clipboard: " + copyText.value);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serpent's Hidden Path - Challenge Deployer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --snake-green: #32CD32;
+            --snake-dark-green: #228B22;
+            --snake-head: #7CFC00;
+            --food-red: #FF4500;
+            --golden-apple: #FFD700;
+            --bg-dark: #222;
+            --board-bg: #333;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Courier New', monospace;
+            background-image: 
+                linear-gradient(rgba(34, 34, 34, 0.8), rgba(34, 34, 34, 0.8)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect x="0" y="0" width="10" height="10" fill="%23333"/><rect x="10" y="10" width="10" height="10" fill="%23333"/></svg>');
+            background-size: 20px 20px;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .card {
+            background-color: var(--board-bg);
+            border: 2px solid var(--snake-dark-green);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(50, 205, 50, 0.3);
+        }
+        
+        .card-header {
+            background-color: var(--snake-dark-green);
+            color: white;
+            border-top-left-radius: 13px !important;
+            border-top-right-radius: 13px !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--snake-green);
+            border-color: var(--snake-dark-green);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--snake-head);
+            border-color: var(--snake-dark-green);
+        }
+        
+        .btn-danger {
+            background-color: var(--food-red);
+            border-color: #B22222;
+        }
+        
+        .btn-info {
+            background-color: var(--golden-apple);
+            border-color: #DAA520;
+            color: black;
+        }
+        
+        .btn-warning {
+            background-color: #FFA500;
+            border-color: #FF8C00;
+            color: black;
+        }
+        
+        #time-left {
+            font-weight: bold;
+            color: var(--golden-apple);
+        }
+        
+        .snake-title {
+            position: relative;
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+        }
+        
+        .snake-title::before {
+            content: "";
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--snake-head);
+            transform: translateY(-50%);
+        }
+        
+        .snake-title::after {
+            content: "";
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--food-red);
+            transform: translateY(-50%);
+        }
+        
+        .snake-segment {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            background-color: var(--snake-green);
+            border-radius: 50%;
+            margin: 0 5px;
+        }
+        
+        .snake-body {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .active-container {
+            position: relative;
+        }
+        
+        .active-container::before {
+            content: "";
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--golden-apple);
+            transform: translateY(-50%);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-50%) scale(1.2); }
+            100% { transform: translateY(-50%) scale(1); }
+        }
+        
+        .challenge-info {
+            background-color: rgba(50, 205, 50, 0.1);
+            border-left: 3px solid var(--snake-green);
+            padding: 10px 15px;
+            margin-top: 20px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        /* CAPTCHA styling */
+        .captcha-container {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .captcha-image {
+            background-color: white;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            max-width: 100%;
+        }
+        
+        .captcha-refresh {
+            cursor: pointer;
+            color: var(--snake-green);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        
+        .captcha-refresh:hover {
+            text-decoration: underline;
+        }
+        
+        .hint-box {
+            background-color: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid var(--golden-apple);
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        /* Snake animation elements */
+        .random-snake {
+            position: fixed;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .snake-head {
+            width: 20px;
+            height: 20px;
+            background-color: var(--snake-head);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .snake-body-segment {
+            width: 16px;
+            height: 16px;
+            background-color: var(--snake-green);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .snake-tail {
+            width: 12px;
+            height: 12px;
+            background-color: var(--snake-dark-green);
+            border-radius: 50%;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+
+<div id="snake-container"></div>
+
+<div class="container mt-5">
+    <h1 class="text-center snake-title">{{ challenge_title }}</h1>
+    
+    <div class="snake-body">
+        <span class="snake-segment"></span>
+        <span class="snake-segment"></span>
+        <span class="snake-segment"></span>
+        <span class="snake-segment"></span>
+        <span class="snake-segment"></span>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Your Challenge Instance</h4>
+                </div>
+                <div class="card-body">
+                    {% if user_container %}
+                    <div class="active-container">
+                        <p><strong>Container ID:</strong> <span class="text-light">{{ user_container[0][:12] }}...</span></p>
+                        <p><strong>Port:</strong> <span class="text-light">{{ user_container[1] }}</span></p>
+                        <p><strong>Started At:</strong> <span class="text-light">{{ user_container[2] | to_datetime }}</span></p>
+                        <p><strong>Time Left:</strong> <span id="time-left">Loading...</span></p>
+                                            <div class="challenge-info">
+                            <p>🎮 <strong>Access your challenge:</strong></p>
+                            <div class="input-group mb-7">
+                                <input type="text" class="form-control bg-dark text-light" id="challenge-url" value="{{ hostname }}" autocomplete="off" readonly>
+                                <button class="btn btn-outline-light" type="button" onclick="copyUrl()">Copy</button>
+                            </div>
+                            <small class="text-light">Click the button to open your challenge in a new window</small>
+                            <div class="mt-2">
+                                 <a href="{{ hostname }}" target="_blank" class="btn btn-sm btn-outline-info">Open Challenge</a>
+                            </div>
+                        </div>                        
+                        <div class="hint-box mt-3">
+                            <p class="mb-1"><strong>💡 Challenge Hints:</strong></p>
+                            <ul class="mb-1">
+                                <li>Use /etc/hossstss to resssolve namesss locally</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid gap-3 mt-4">
+                            <button id="extend-btn" class="btn btn-info" onclick="extendContainerLifetime()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-hourglass-split me-2" viewBox="0 0 16 16">
+                                    <path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z"/>
+                                </svg>
+                                Extend Lifetime by {{ add_minutes }} minutes
+                            </button>
+
+                            <button class="btn btn-warning" onclick="handleRestartContainer(event)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise me-2" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                                </svg>
+                                Restart Challenge
+                            </button>
+
+                            <button class="btn btn-danger" onclick="handleStopContainer(event)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-octagon-fill me-2" viewBox="0 0 16 16">
+                                    <path d="M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353L11.46.146zm-6.106 4.5L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708z"/>
+                                </svg>
+                                Stop Container
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p>You don't have an active challenge instance. Start one to begin!</p>
+                        
+                        <!-- CAPTCHA Section -->
+                        <div class="captcha-container" id="captcha-section">
+                            <h5 class="mb-3">Verification Required</h5>
+                            <p class="small mb-3">To prevent abuse, please solve the problem below:</p>
+                            
+                            <div class="text-center mb-3">
+                                <img id="captcha-image" class="captcha-image" src="" alt="CAPTCHA Image">
+                                <span class="captcha-refresh" onclick="refreshCaptcha()">↻ Refresh CAPTCHA</span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="captcha-answer" class="form-label">Your Answer:</label>
+                                <input type="text" class="form-control bg-dark text-light" id="captcha-answer" placeholder="Enter your answer">
+                            </div>
+                        </div>
+                        
+                        <button id="launch-btn" class="btn btn-primary btn-lg" onclick="deployContainer()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill me-2" viewBox="0 0 16 16">
+                                <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                            </svg>
+                            Launch Challenge
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="challenge-description mt-4 p-3 rounded" style="background-color: rgba(255, 255, 255, 0.05);">
+                <h4>🐍 Challenge Description</h4>
+                <p>{{ challenge_description }}</p>
+                <div class="mt-3">
+                    <p><strong>Hint:</strong></p>
+                    <ul>
+                        <li>Use /etc/hosssstss to resssolve namessss locally</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // CAPTCHA variables
+    let currentCaptchaId = null;
+
+    // Initialize on page load
+    window.onload = function() {
+        // Set up expiration timer if container exists
+        const expirationTime = {{ user_container[3] if user_container else 0 }};
+        if (expirationTime > 0) {
+            updateExpirationTime(expirationTime);
+        } else {
+            // Load a CAPTCHA for new users
+            refreshCaptcha();
+        }
+        
+        // Start random snake animations
+        startRandomSnakes();
+    };
+    
+    // Load a new CAPTCHA
+    function refreshCaptcha() {
+        fetch("/get_captcha")
+            .then(response => response.json())
+            .then(data => {
+                currentCaptchaId = data.captcha_id;
+                document.getElementById('captcha-image').src = data.captcha_image;
+                document.getElementById('captcha-answer').value = '';
+            })
+            .catch(error => {
+                console.error("Error loading CAPTCHA:", error);
+                showAlert("Failed to load CAPTCHA. Please refresh the page.", 'danger');
+            });
+    }
+    
+    // Handle container deployment
+    function deployContainer() {
+        // Get CAPTCHA answer
+        const captchaAnswer = document.getElementById('captcha-answer').value.trim();
+        
+        if (!captchaAnswer) {
+            showAlert("Please solve the CAPTCHA first", 'warning');
+            return;
+        }
+        
+        // Show loading animation
+        showSnakeLoading();
+        
+        // Send request to server with CAPTCHA verification
+        fetch("/deploy", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                captcha_id: currentCaptchaId,
+                captcha_answer: captchaAnswer
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideSnakeLoading();
+            if (data.error && data.error.includes("CAPTCHA")) {
+                // CAPTCHA failed, refresh and try again
+                refreshCaptcha();
+                showAlert(data.error, 'danger');
+            } else {
+                handleResponse(data);
+            }
+        })
+        .catch(error => {
+            hideSnakeLoading();
+            showAlert("Error: " + error, 'danger');
+        });
+    }
+    
+    function handleResponse(response) {
+        if (response.error) {
+            showAlert(response.error, 'danger');
+        } else {
+            showAlert(response.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        }
+    }
+    
+    function handleStopContainer(event) {
+        event.preventDefault();
+        if (confirm("Are you sure you want to stop your container? This action cannot be undone.")) {
+            showSnakeLoading();
+            fetch("/stop", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideSnakeLoading();
+                handleResponse(data);
+            })
+            .catch(error => {
+                hideSnakeLoading();
+                showAlert("Error: " + error, 'danger');
+            });
+        }
+    }
+    
+    function handleRestartContainer(event) {
+        event.preventDefault();
+        
+        // Show loading animation
+        showSnakeLoading();
+        
+        fetch("/restart", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideSnakeLoading();
+            handleResponse(data);
+        })
+        .catch(error => {
+            hideSnakeLoading();
+            showAlert("Error: " + error, 'danger');
+        });
+    }
+    
+    function extendContainerLifetime() {
+        // Show loading animation
+        showSnakeLoading();
+        
+        fetch("/extend", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideSnakeLoading();
+            if (data.error) {
+                showAlert(data.error, 'danger');
+            } else {
+                updateExpirationTime(data.new_expiration_time);
+                showAlert("Challenge lifetime extended!", 'success');
+            }
+        })
+        .catch(error => {
+            hideSnakeLoading();
+            showAlert("Error: " + error, 'danger');
+        });
+    }
+    
+    function updateExpirationTime(expirationTime) {
+        const timeLeftElement = document.getElementById('time-left');
+        
+        function update() {
+            const timeLeft = expirationTime - Math.floor(Date.now() / 1000);
+            
+            if (timeLeft <= 0) {
+                timeLeftElement.textContent = "Expired";
+                timeLeftElement.classList.add('text-danger');
+                return;
+            }
+            
+            const hours = Math.floor(timeLeft / 3600);
+            const minutes = Math.floor((timeLeft % 3600) / 60);
+            const seconds = timeLeft % 60;
+            
+            let timeString = "";
+            if (hours > 0) {
+                timeString += `${hours}h `;
+            }
+            timeString += `${minutes}m ${seconds}s`;
+            
+            timeLeftElement.textContent = timeString;
+            
+            // Change color based on remaining time
+            if (timeLeft < 300) { // less than 5 minutes
+                timeLeftElement.className = 'text-danger';
+            } else if (timeLeft < 600) { // less than 10 minutes
+                timeLeftElement.className = 'text-warning';
+            } else {
+                timeLeftElement.className = 'text-success';
+            }
+        }
+        
+        update();
+        setInterval(update, 1000);
+    }
+    
+    function copyUrl() {
+        const urlInput = document.getElementById('challenge-url');
+        urlInput.select();
+        document.execCommand('copy');
+        showAlert('Challenge URL copied to clipboard!', 'info');
+    }
+    
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-4`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 3000);
+    }
+    
+    function showSnakeLoading() {
+        // Create snake loading overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'loading-overlay';
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0,0,0,0.7)';
+        overlay.style.zIndex = '9999';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        
+        const snakeLoader = document.createElement('div');
+        snakeLoader.className = 'snake-loader';
+        snakeLoader.innerHTML = `
+            <div style="position: relative; width: 200px; height: 60px;">
+                <div class="snake-head" style="position: absolute; width: 20px; height: 20px; background-color: #7CFC00; border-radius: 50%; left: 0; top: 20px; animation: snake-move 2s infinite linear;"></div>
+                <div class="snake-body1" style="position: absolute; width: 20px; height: 20px; background-color: #32CD32; border-radius: 50%; left: 0; top: 20px; animation: snake-move 2s infinite linear; animation-delay: 0.2s;"></div>
+                <div class="snake-body2" style="position: absolute; width: 20px; height: 20px; background-color: #32CD32; border-radius: 50%; left: 0; top: 20px; animation: snake-move 2s infinite linear; animation-delay: 0.4s;"></div>
+                <div class="snake-body3" style="position: absolute; width: 20px; height: 20px; background-color: #32CD32; border-radius: 50%; left: 0; top: 20px; animation: snake-move 2s infinite linear; animation-delay: 0.6s;"></div>
+                <div class="food" style="position: absolute; width: 15px; height: 15px; background-color: #FF4500; border-radius: 50%; right: 20px; top: 23px;"></div>
+            </div>
+            <style>
+                @keyframes snake-move {
+                    0% { left: 0; }
+                    50% { left: 180px; }
+                    100% { left: 0; }
+                }
+            </style>
+            <p style="color: white; margin-top: 20px;">Loading...</p>
+        `;
+        
+        overlay.appendChild(snakeLoader);
+        document.body.appendChild(overlay);
+    }
+    
+    function hideSnakeLoading() {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    }
+    
+    // Snake Animation Functions
+    function startRandomSnakes() {
+        // Create a snake every 8-15 seconds
+        setInterval(() => {
+            if (Math.random() < 0.5) { // 50% chance each interval
+                createRandomSnake();
+            }
+        }, 10000);
+        
+        // Create initial snake
+        setTimeout(createRandomSnake, 2000);
+    }
+    
+    function createRandomSnake() {
+        const snakeContainer = document.getElementById('snake-container');
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        // Create snake elements
+        const snake = document.createElement('div');
+        snake.className = 'random-snake';
+        
+        const snakeHead = document.createElement('div');
+        snakeHead.className = 'snake-head';
+        
+        // Create 3-6 body segments
+        const numSegments = Math.floor(Math.random() * 4) + 3;
+        const segments = [];
+        
+        for (let i = 0; i < numSegments; i++) {
+            const segment = document.createElement('div');
+            segment.className = 'snake-body-segment';
+            segments.push(segment);
+            snake.appendChild(segment);
+        }
+        
+        // Create tail
+        const snakeTail = document.createElement('div');
+        snakeTail.className = 'snake-tail';
+        
+        // Add all parts to snake
+        snake.appendChild(snakeHead);
+        snake.appendChild(snakeTail);
+        
+        // Determine start position (edges of screen)
+        let startX, startY, destX, destY;
+        
+        // Randomly choose which edge to start from
+        const edge = Math.floor(Math.random() * 4);
+        switch(edge) {
+            case 0: // Top edge
+                startX = Math.random() * windowWidth;
+                startY = -30;
+                destX = Math.random() * windowWidth;
+                destY = windowHeight + 30;
+                break;
+            case 1: // Right edge
+                startX = windowWidth + 30;
+                startY = Math.random() * windowHeight;
+                destX = -30;
+                destY = Math.random() * windowHeight;
+                break;
+            case 2: // Bottom edge
+                startX = Math.random() * windowWidth;
+                startY = windowHeight + 30;
+                destX = Math.random() * windowWidth;
+                destY = -30;
+                break;
+            case 3: // Left edge
+                startX = -30;
+                startY = Math.random() * windowHeight;
+                destX = windowWidth + 30;
+                destY = Math.random() * windowHeight;
+                break;
+        }
+        
+        // Set initial position
+        snake.style.left = `${startX}px`;
+        snake.style.top = `${startY}px`;
+        
+        // Add to container
+        snakeContainer.appendChild(snake);
+        
+        // Calculate movement
+        const duration = 10000 + Math.random() * 10000; // 10-20 seconds
+        const startTime = Date.now();
+        
+        // Previous positions for trailing effect
+        const positions = [{x: startX, y: startY}];
+        
+        // Animation function
+        function moveSnake() {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Calculate current position
+            const currentX = startX + (destX - startX) * progress;
+            const currentY = startY + (destY - startY) * progress;
+            
+            // Store position
+            positions.push({x: currentX, y: currentY});
+            
+            // Only keep recent positions
+            if (positions.length > numSegments + 2) {
+                positions.shift();
+            }
+            
+            // Update head position
+            snakeHead.style.left = `${currentX}px`;
+            snakeHead.style.top = `${currentY}px`;
+            
+            // Update body segments (follow the head with delay)
+            segments.forEach((segment, index) => {
+                const posIndex = Math.max(0, positions.length - 2 - index);
+                if (positions[posIndex]) {
+                    segment.style.left = `${positions[posIndex].x}px`;
+                    segment.style.top = `${positions[posIndex].y}px`;
+                }
+            });
+            
+            // Update tail position (follow the last segment)
+            const tailPosIndex = Math.max(0, positions.length - numSegments - 2);
+            if (positions[tailPosIndex]) {
+                snakeTail.style.left = `${positions[tailPosIndex].x}px`;
+                snakeTail.style.top = `${positions[tailPosIndex].y}px`;
+            }
+            
+            // Continue animation or clean up
+            if (progress < 1) {
+                requestAnimationFrame(moveSnake);
+            } else {
+                snake.remove();
+            }
+        }
+        
+        // Start animation
+        requestAnimationFrame(moveSnake);
+    }
+    
+    // Allow pressing Enter in the CAPTCHA input field to submit
+    document.addEventListener('DOMContentLoaded', function() {
+        const captchaAnswer = document.getElementById('captcha-answer');
+        if (captchaAnswer) {
+            captchaAnswer.addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    deployContainer();
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+services:
+
+  iot-device:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile.bot_IoT
+    environment:
+      - MQTT_BROKER=82.202.143.88
+      - MQTT_PORT=1883
+      - MQTT_DATA_TOPIC=home/sensors/data
+      - MQTT_RESPONSE_TOPIC=home/sensors/response
+      - MQTT_USER=root
+      - MQTT_PASSWORD=yourpassword
+    restart: always
+
+  server:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile.bot_server
+    environment:
+      - MQTT_BROKER=82.202.143.88
+      - MQTT_PORT=1883
+      - MQTT_DATA_TOPIC=home/sensors/data
+      - MQTT_RESPONSE_TOPIC=home/sensors/response
+      - MQTT_USER=root
+      - MQTT_PASSWORD=yourpassword
+    restart: always
+
+  attack-service:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile.bot_getflag
+    environment:
+      - MQTT_BROKER=82.202.143.88
+      - MQTT_PORT=1883
+      - MQTT_RESPONSE_TOPIC=home/sensors/response
+      - MQTT_USER=root
+      - MQTT_PASSWORD=yourpassword
+      - ATTACK_STRING=ozonctf{ATtack_serVer_wh1t_u_T2thBrush}
+    restart: always

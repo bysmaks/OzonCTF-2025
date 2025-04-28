@@ -1,0 +1,12 @@
+services:
+  table_notes:
+    build: .
+    restart: unless-stopped
+    pids_limit: 512
+    read_only: true
+    mem_limit: 128M
+    cap_add:
+      - SYS_TIME
+    cpus: 1
+    ports: 
+      - "3773:3773"

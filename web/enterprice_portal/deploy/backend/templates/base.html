@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- 
+        DEBUG INFO: Internal API routes
+        - /redirect?target=VALID_URL (for internal redirects)
+        - VALID_URLS: [/flag]
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Portal</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Enterprise Portal</h1>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/register">Register</a>
+                {% if current_user %}
+                    <a href="/profile/{{ current_user }}">My Profile</a>
+                    <a href="/admin/status">Admin Panel</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <div class="container">
+            <p>© 2025 Enterprise Portal. All rights reserved.</p>
+        </div>
+    </footer>
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

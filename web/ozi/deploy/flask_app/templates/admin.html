@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serpent Admin - CTF Challenge Deployer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --snake-green: #32CD32;
+            --snake-dark-green: #228B22;
+            --snake-head: #7CFC00;
+            --food-red: #FF4500;
+            --golden-apple: #FFD700;
+            --bg-dark: #1a1a1a;
+            --panel-bg: #2a2a2a;
+            --text-color: #ffffff;
+            --danger-color: #ff3333;
+            --success-color: #33cc33;
+            --warning-color: #ffcc00;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            font-family: 'Courier New', monospace;
+            background-image: 
+                linear-gradient(rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 0.8)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect x="0" y="0" width="10" height="10" fill="%232a2a2a"/><rect x="10" y="10" width="10" height="10" fill="%232a2a2a"/></svg>');
+            background-size: 20px 20px;
+            padding-bottom: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .card {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--snake-green);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(50, 205, 50, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background-color: var(--snake-dark-green);
+            color: white;
+            border-top-left-radius: 13px !important;
+            border-top-right-radius: 13px !important;
+        }
+        
+        .admin-title {
+            position: relative;
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: var(--snake-green);
+            text-shadow: 0 0 10px rgba(50, 205, 50, 0.5);
+        }
+        
+        .admin-title::before {
+            content: "</";
+            color: var(--golden-apple);
+            margin-right: 10px;
+        }
+        
+        .admin-title::after {
+            content: ">";
+            color: var(--golden-apple);
+            margin-left: 10px;
+        }
+
+        .admin-key-form {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 3px solid var(--snake-green);
+        }
+        
+        .tab-content {
+            padding: 20px;
+        }
+        
+        .tab-pane {
+            min-height: 300px;
+        }
+        
+        .nav-tabs {
+            border-bottom: 1px solid var(--snake-green);
+        }
+        
+        .nav-tabs .nav-link {
+            color: var(--text-color);
+            border: none;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+            padding: 10px 20px;
+            margin-right: 5px;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            border-bottom: 3px solid var(--golden-apple);
+            background-color: rgba(255, 215, 0, 0.1);
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--golden-apple);
+            background-color: transparent;
+            border-bottom: 3px solid var(--golden-apple);
+            font-weight: bold;
+        }
+        
+        pre {
+            background-color: #111;
+            color: var(--snake-green);
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+            max-height: 600px;
+        }
+        
+        .refresh-btn {
+            float: right;
+            background-color: var(--snake-green);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
+        .refresh-btn:hover {
+            background-color: var(--snake-dark-green);
+        }
+        
+        .stats-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .stats-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .resource-bar {
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-bottom: 5px;
+        }
+        
+        .resource-bar-fill {
+            height: 100%;
+            background-color: var(--snake-green);
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .resource-bar-fill.warning {
+            background-color: var(--warning-color);
+        }
+        
+        .resource-bar-fill.danger {
+            background-color: var(--danger-color);
+        }
+        
+        .container-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .container-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--snake-green);
+        }
+        
+        .container-card .running {
+            color: var(--success-color);
+        }
+        
+        .container-card .stopped {
+            color: var(--danger-color);
+        }
+        
+        .logs-selector {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .logs-selector select {
+            flex-grow: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border: 1px solid var(--snake-green);
+            border-radius: 5px;
+            padding: 8px;
+        }
+        
+        .logs-loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 0.25rem solid rgba(50, 205, 50, 0.3);
+            border-right-color: var(--snake-green);
+            border-radius: 50%;
+            animation: spinner-border 0.75s linear infinite;
+        }
+        
+        @keyframes spinner-border {
+            to { transform: rotate(360deg); }
+        }
+        
+        #logsOutput {
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 0.85rem;
+        }
+        
+        /* Highlights for logs */
+        #logsOutput .error {
+            color: var(--danger-color);
+        }
+        
+        #logsOutput .warning {
+            color: var(--warning-color);
+        }
+        
+        #logsOutput .info {
+            color: var(--snake-green);
+        }
+        
+        #logsOutput .success {
+            color: var(--success-color);
+        }
+        
+        /* Storage section for admin key */
+        .admin-storage {
+            opacity: 0.7;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .admin-storage label {
+            margin-right: 10px;
+        }
+
+        /* Snake animation elements */
+        .random-snake {
+            position: fixed;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .snake-head {
+            width: 20px;
+            height: 20px;
+            background-color: var(--snake-head);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .snake-body-segment {
+            width: 16px;
+            height: 16px;
+            background-color: var(--snake-green);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .snake-tail {
+            width: 12px;
+            height: 12px;
+            background-color: var(--snake-dark-green);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        /* Snake themed buttons */
+        .btn-primary {
+            background-color: var(--snake-green);
+            border-color: var(--snake-dark-green);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--snake-head);
+            border-color: var(--snake-dark-green);
+        }
+
+        .btn-outline-danger {
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .btn-outline-danger:hover {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        /* For admin form inputs */
+        .form-control.bg-dark {
+            border-color: var(--snake-dark-green);
+        }
+        
+        .form-control.bg-dark:focus {
+            border-color: var(--snake-green);
+            box-shadow: 0 0 0 0.25rem rgba(50, 205, 50, 0.25);
+        }
+    </style>
+</head>
+<body>
+
+<div id="snake-container"></div>
+
+<div class="container mt-5">
+    <h1 class="text-center admin-title">Admin Dashboard</h1>
+    
+    <div class="admin-key-form" id="authForm">
+        <h4>Authentication Required</h4>
+        <p>Enter your admin key to access the dashboard.</p>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="input-group mb-3">
+                    <input type="password" id="adminKeyInput" class="form-control bg-dark text-light" placeholder="Enter Admin Key" aria-label="Admin Key">
+                    <button class="btn btn-primary" type="button" id="submitKey">Authenticate</button>
+                </div>
+            </div>
+        </div>
+        <div class="admin-storage">
+            <label>
+                <input type="checkbox" id="rememberAdminKey"> Remember admin key in this browser
+            </label>
+            <small class="text-muted">(stored securely in localStorage)</small>
+        </div>
+    </div>
+    
+    <div id="adminDashboard" style="display: none;">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4>System Dashboard</h4>
+                <button class="refresh-btn" id="refreshStats">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="containers-tab" data-bs-toggle="tab" data-bs-target="#containers" type="button" role="tab" aria-controls="containers" aria-selected="false">Containers</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="logs-tab" data-bs-toggle="tab" data-bs-target="#logs" type="button" role="tab" aria-controls="logs" aria-selected="false">Logs</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="metrics-tab" data-bs-toggle="tab" data-bs-target="#metrics" type="button" role="tab" aria-controls="metrics" aria-selected="false">Metrics</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="adminTabsContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h5>System Status</h5>
+                                <div id="statusInfo">Loading...</div>
+                                
+                                <h5 class="mt-4">Resource Usage</h5>
+                                <div id="resourceMetrics">Loading...</div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Container Statistics</h5>
+                                <div id="containerStats">Loading...</div>
+                                
+                                <h5 class="mt-4">Database Status</h5>
+                                <div id="databaseStats">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Containers Tab -->
+                    <div class="tab-pane fade" id="containers" role="tabpanel" aria-labelledby="containers-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Active Containers</h5>
+                            <div>
+                                <select id="containerSortOption" class="form-select form-select-sm bg-dark text-light">
+                                    <option value="expiration">Sort by Expiration</option>
+                                    <option value="start">Sort by Start Time</option>
+                                    <option value="port">Sort by Port</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="containersList" class="container-list">Loading...</div>
+                    </div>
+                    
+                    <!-- Logs Tab -->
+                    <div class="tab-pane fade" id="logs" role="tabpanel" aria-labelledby="logs-tab">
+                        <div class="logs-selector">
+                            <select id="containerSelector" class="form-select">
+                                <option value="">All User Containers</option>
+                                <option value="all">All Logs (Services + Containers)</option>
+                                <optgroup label="System Services">
+                                    <option value="deployer">Deployer Service</option>
+                                    <option value="database">Database Service</option>
+                                    <option value="task_service">Task Service</option>
+                                    <option value="all_services">All Services</option>
+                                </optgroup>
+                                <optgroup label="User Containers" id="userContainerOptions">
+                                    <!-- User containers will be populated here -->
+                                </optgroup>
+                            </select>
+                            <button id="refreshLogs" class="btn btn-primary ms-2">Refresh</button>
+                            <select id="logLines" class="form-select ms-2" style="width: 120px;">
+                                <option value="50">50 lines</option>
+                                <option value="100" selected>100 lines</option>
+                                <option value="200">200 lines</option>
+                                <option value="500">500 lines</option>
+                            </select>
+                        </div>
+                        <div id="logsLoading" class="logs-loading">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-2">Loading logs...</p>
+                        </div>
+                        <pre id="logsOutput">Select a container or service and click "Refresh" to view logs.</pre>
+                    </div>
+                    
+                    <!-- Metrics Tab -->
+                    <div class="tab-pane fade" id="metrics" role="tabpanel" aria-labelledby="metrics-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Prometheus Metrics</h5>
+                            <button id="refreshMetrics" class="btn btn-primary">Refresh Metrics</button>
+                        </div>
+                        <div id="metricsLoading" class="logs-loading">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-2">Loading metrics...</p>
+                        </div>
+                        <pre id="metricsOutput">Click "Refresh Metrics" to load Prometheus metrics.</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <button id="logoutBtn" class="btn btn-outline-danger">Logout</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Constants
+    const API_ENDPOINTS = {
+        status: '/admin/status',
+        logs: '/logs',
+        metrics: '/metrics'
+    };
+    
+    // State
+    let adminKey = '';
+    
+    // DOM Elements
+    const adminKeyInput = document.getElementById('adminKeyInput');
+    const submitKeyBtn = document.getElementById('submitKey');
+    const rememberKeyCheckbox = document.getElementById('rememberAdminKey');
+    const authForm = document.getElementById('authForm');
+    const adminDashboard = document.getElementById('adminDashboard');
+    const refreshStatsBtn = document.getElementById('refreshStats');
+    const containerSelector = document.getElementById('containerSelector');
+    const refreshLogsBtn = document.getElementById('refreshLogs');
+    const logLinesSelect = document.getElementById('logLines');
+    const logsOutput = document.getElementById('logsOutput');
+    const logsLoading = document.getElementById('logsLoading');
+    const refreshMetricsBtn = document.getElementById('refreshMetrics');
+    const metricsOutput = document.getElementById('metricsOutput');
+    const metricsLoading = document.getElementById('metricsLoading');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const containerSortOption = document.getElementById('containerSortOption');
+    
+    // Check for saved admin key
+    const savedAdminKey = localStorage.getItem('ctf_admin_key');
+    if (savedAdminKey) {
+        adminKey = savedAdminKey;
+        adminKeyInput.value = '********'; // Mask the key
+        rememberKeyCheckbox.checked = true;
+        // Auto authenticate if key is saved
+        authenticateAdmin();
+    }
+    
+    // Start random snake animations
+    window.onload = function() {
+        startRandomSnakes();
+    };
+    
+    // Event Listeners
+    submitKeyBtn.addEventListener('click', () => {
+        adminKey = adminKeyInput.value.trim();
+        if (adminKey) {
+            if (rememberKeyCheckbox.checked) {
+                localStorage.setItem('ctf_admin_key', adminKey);
+            }
+            authenticateAdmin();
+        } else {
+            showAlert('Please enter an admin key', 'warning');
+        }
+    });
+    
+    // Allow Enter key to submit
+    adminKeyInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            submitKeyBtn.click();
+        }
+    });
+    
+    // Dashboard refresh controls
+    refreshStatsBtn.addEventListener('click', loadDashboardData);
+    refreshLogsBtn.addEventListener('click', loadLogs);
+    refreshMetricsBtn.addEventListener('click', loadMetrics);
+    containerSortOption.addEventListener('change', sortContainers);
+    
+    // Logout button
+    logoutBtn.addEventListener('click', () => {
+        adminKey = '';
+        localStorage.removeItem('ctf_admin_key');
+        adminDashboard.style.display = 'none';
+        authForm.style.display = 'block';
+        adminKeyInput.value = '';
+    });
+    
+    // Authentication function
+function authenticateAdmin() {
+    // Use POST endpoint instead of URL parameters
+    fetch('/admin/auth', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ admin_key: adminKey })
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else if (response.status === 401) {
+            throw new Error('Invalid admin key');
+        } else {
+            throw new Error('Server error, please try again');
+        }
+    })
+    .then(data => {
+        // Authentication successful
+        authForm.style.display = 'none';
+        adminDashboard.style.display = 'block';
+        
+        // Load dashboard data
+        loadDashboardData();
+    })
+    .catch(error => {
+        showAlert(error.message, 'danger');
+        // Clear remembered key if invalid
+        if (error.message === 'Invalid admin key') {
+            localStorage.removeItem('ctf_admin_key');
+        }
+    });
+}
+    // Load all dashboard data
+function loadDashboardData() {
+    // Show loading indicators
+    document.getElementById('statusInfo').innerHTML = 'Loading...';
+    document.getElementById('resourceMetrics').innerHTML = 'Loading...';
+    document.getElementById('containerStats').innerHTML = 'Loading...';
+    document.getElementById('databaseStats').innerHTML = 'Loading...';
+    document.getElementById('containersList').innerHTML = 'Loading...';
+    
+    // Fetch status data with admin key in header
+    fetch(`${API_ENDPOINTS.status}`, {
+        headers: {
+            'Authorization': `Bearer ${adminKey}`
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Failed to load dashboard data');
+        }
+    })
+    .then(data => {
+        // Populate overview metrics
+        updateOverviewMetrics(data);
+        
+        // Populate container list
+        updateContainersList(data.containers);
+        
+        // Update container selector for logs
+        updateContainerSelector(data.containers);
+    })
+    .catch(error => {
+        showAlert('Error loading dashboard data: ' + error.message, 'danger');
+        // If authentication failed, show login form again
+        if (error.response && error.response.status === 403) {
+            adminDashboard.style.display = 'none';
+            authForm.style.display = 'block';
+        }
+    });
+	}
+    // Update overview metrics
+    function updateOverviewMetrics(data) {
+        // Basic status info
+        let statusHtml = `
+            <div class="card bg-dark mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="stats-label">Status</div>
+                            <div class="stats-value">${data.status}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-label">Challenge</div>
+                            <div class="stats-value">${data.challenge}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById('statusInfo').innerHTML = statusHtml;
+        
+        // Resource metrics
+        if (data.resources && Object.keys(data.resources).length > 0) {
+            let resourceHtml = '';
+            
+            // Container usage
+            let containerPercent = parseFloat(data.resources.containers.percent);
+            resourceHtml += createResourceBar('Containers', containerPercent, 
+                `${data.resources.containers.current} / ${data.resources.containers.limit}`);
+            
+            // CPU usage
+            let cpuPercent = parseFloat(data.resources.cpu.percent);
+            resourceHtml += createResourceBar('CPU', cpuPercent, 
+                `${data.resources.cpu.current} / ${data.resources.cpu.limit}`);
+            
+            // Memory usage
+            let memoryPercent = parseFloat(data.resources.memory.percent);
+            resourceHtml += createResourceBar('Memory', memoryPercent, 
+                `${data.resources.memory.current} / ${data.resources.memory.limit}`);
+            
+            resourceHtml += `
+                <div class="text-muted mt-2">
+                    <small>Last updated: ${data.resources.last_updated}</small>
+                </div>
+            `;
+            
+            document.getElementById('resourceMetrics').innerHTML = resourceHtml;
+        } else {
+            document.getElementById('resourceMetrics').innerHTML = 
+                '<div class="alert alert-info">Resource monitoring disabled</div>';
+        }
+        
+        // Container statistics
+        let containerStatsHtml = `
+            <div class="card bg-dark mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="stats-label">Active Containers</div>
+                            <div class="stats-value">${data.metrics.active_containers}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-label">Total Created</div>
+                            <div class="stats-value">${data.metrics.total_containers_created}</div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <div class="stats-label">Available Ports</div>
+                            <div class="stats-value">${data.metrics.available_ports}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-label">Port Usage</div>
+                            <div class="stats-value">${data.metrics.port_usage_percent}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-muted mt-2">
+                <small>Rate limit: ${data.rate_limiting.max_containers_per_hour} containers per IP in ${data.rate_limiting.window_seconds/3600} hours</small>
+            </div>
+        `;
+        document.getElementById('containerStats').innerHTML = containerStatsHtml;
+        
+        // Database statistics
+        let dbStatus = data.database.connection_pool.status === 'active' ? 
+            '<span class="text-success">Connected</span>' : 
+            '<span class="text-danger">Disconnected</span>';
+            
+        let databaseHtml = `
+            <div class="card bg-dark mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="stats-label">Connection Status</div>
+                            <div class="stats-value">${dbStatus}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-label">Database</div>
+                            <div class="stats-value">${data.database.host}/${data.database.name}</div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="stats-label">Connection Pool</div>
+                            <div class="stats-value">
+                                ${data.database.connection_pool.free_connections || 0} free / 
+                                ${data.database.connection_pool.max_connections || 0} max
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById('databaseStats').innerHTML = databaseHtml;
+    }
+    
+    // Create a resource usage bar
+    function createResourceBar(name, percent, text) {
+        // Determine color based on usage
+        let colorClass = percent > 90 ? 'danger' : (percent > 70 ? 'warning' : '');
+        
+        return `
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <span>${name}</span>
+                    <span>${text}</span>
+                </div>
+                <div class="resource-bar">
+                    <div class="resource-bar-fill ${colorClass}" style="width: ${percent}%"></div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Update containers list
+    function updateContainersList(containers) {
+        if (!containers || containers.length === 0) {
+            document.getElementById('containersList').innerHTML = 
+                '<div class="alert alert-info">No active containers</div>';
+            return;
+        }
+        
+        // Sort containers based on selected option
+        const sortOption = containerSortOption.value;
+        sortContainersByOption(containers, sortOption);
+        
+        let containersHtml = '';
+        
+        containers.forEach(container => {
+            // Format time left
+            let timeLeft = '';
+            if (container.time_left <= 0) {
+                timeLeft = '<span class="text-danger">Expired</span>';
+            } else if (container.time_left < 300) { // less than 5 minutes
+                timeLeft = `<span class="text-danger">${formatSeconds(container.time_left)}</span>`;
+            } else if (container.time_left < 600) { // less than 10 minutes
+                timeLeft = `<span class="text-warning">${formatSeconds(container.time_left)}</span>`;
+            } else {
+                timeLeft = `<span class="text-success">${formatSeconds(container.time_left)}</span>`;
+            }
+            
+            // Format status
+            let statusClass = container.running ? 'running' : 'stopped';
+            let statusText = container.running ? 'Running' : container.status || 'Stopped';
+            
+            containersHtml += `
+                <div class="container-card">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div><strong>ID:</strong> ${container.id}</div>
+                            <div><strong>Port:</strong> ${container.port}</div>
+                            <div><strong>Status:</strong> <span class="${statusClass}">${statusText}</span></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div><strong>Started:</strong> ${container.start_time}</div>
+                            <div><strong>Expires:</strong> ${container.expiration_time}</div>
+                            <div><strong>Time Left:</strong> ${timeLeft}</div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small><strong>User:</strong> ${container.user_uuid}</small>
+                        <small class="ms-3"><strong>IP:</strong> ${container.ip_address}</small>
+                    </div>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewContainerLogs('${container.full_id}')">View Logs</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('containersList').innerHTML = containersHtml;
+    }
+    
+    // Sort containers by the selected option
+    function sortContainers() {
+        // Get current container data from the status endpoint and resort
+        fetch(`${API_ENDPOINTS.status}?admin_key=${encodeURIComponent(adminKey)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.containers) {
+                    updateContainersList(data.containers);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading containers:', error);
+            });
+    }
+    
+    // Sort containers by a specific option
+    function sortContainersByOption(containers, option) {
+        switch (option) {
+            case 'expiration':
+                containers.sort((a, b) => a.time_left - b.time_left);
+                break;
+            case 'start':
+                containers.sort((a, b) => {
+                    const aTime = new Date(a.start_time).getTime();
+                    const bTime = new Date(b.start_time).getTime();
+                    return bTime - aTime; // descending (newest first)
+                });
+                break;
+            case 'port':
+                containers.sort((a, b) => a.port - b.port);
+                break;
+            default:
+                break;
+        }
+    }
+    
+    // Update container selector for logs
+    function updateContainerSelector(containers) {
+        // Clear existing options in user containers group
+        const userContainerOptions = document.getElementById('userContainerOptions');
+        while (userContainerOptions.children.length > 0) {
+            userContainerOptions.removeChild(userContainerOptions.children[0]);
+        }
+        
+        // Add container options
+        if (containers && containers.length > 0) {
+            containers.forEach(container => {
+                const option = document.createElement('option');
+                option.value = container.full_id;
+                option.text = `${container.id} (Port ${container.port})`;
+                userContainerOptions.appendChild(option);
+            });
+        }
+    }
+    
+    // Load logs for selected container
+    function loadLogs() {
+    const containerId = containerSelector.value;
+    const logLines = logLinesSelect.value;
+    
+    // Show loading indicator
+    logsLoading.style.display = 'block';
+    logsOutput.textContent = '';
+    
+    // Build URL (no admin key in URL)
+    let url = `${API_ENDPOINTS.logs}?tail=${logLines}&format=text`;
+    if (containerId) {
+        url += `&container_id=${containerId}`;
+    }
+    
+    // Fetch logs with auth header
+    fetch(url, {
+        headers: {
+            'Authorization': `Bearer ${adminKey}`
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.text();
+        } else {
+            throw new Error(`Error loading logs: ${response.status}`);
+        }
+    })
+    .then(text => {
+        logsOutput.textContent = text;
+        highlightLogs(logsOutput);
+    })
+    .catch(error => {
+        logsOutput.textContent = `Error: ${error.message}`;
+        // If authentication failed, show login form again
+        if (error.response && error.response.status === 403) {
+            adminDashboard.style.display = 'none';
+            authForm.style.display = 'block';
+        }
+    })
+    .finally(() => {
+        logsLoading.style.display = 'none';
+    });
+}
+    
+    // View logs for a specific container (called from container list)
+    function viewContainerLogs(containerId) {
+        // Select the container in the dropdown
+        containerSelector.value = containerId;
+        
+        // Switch to logs tab
+        document.getElementById('logs-tab').click();
+        
+        // Load logs
+        loadLogs();
+    }
+
+    // View logs for a specific service
+    function viewServiceLogs(serviceName) {
+        // Select the service in the dropdown
+        containerSelector.value = serviceName;
+        
+        // Switch to logs tab
+        document.getElementById('logs-tab').click();
+        
+        // Load logs
+        loadLogs();
+    }
+    
+    // Load metrics
+   function loadMetrics() {
+    // Show loading indicator
+    metricsLoading.style.display = 'block';
+    metricsOutput.textContent = '';
+    
+    // Fetch metrics with auth header
+    fetch(API_ENDPOINTS.metrics, {
+        headers: {
+            'Authorization': `Bearer ${adminKey}`
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.text();
+        } else {
+            throw new Error(`Error loading metrics: ${response.status}`);
+        }
+    })
+    .then(text => {
+        metricsOutput.textContent = text;
+    })
+    .catch(error => {
+        metricsOutput.textContent = `Error: ${error.message}`;
+        // If authentication failed, show login form again
+        if (error.response && error.response.status === 403) {
+            adminDashboard.style.display = 'none';
+            authForm.style.display = 'block';
+        }
+    })
+    .finally(() => {
+        metricsLoading.style.display = 'none';
+    });
+}
+
+    
+    // Enhanced log highlighting with new patterns for services
+    function highlightLogs(element) {
+        let html = element.textContent;
+        
+        // Highlight service section headers
+        html = html.replace(/===== (Service|Container): ([^=]+) =====/g, 
+                            '<span style="color: #33ccff; font-weight: bold;">===== $1: $2 =====</span>');
+        
+        // Highlight postgres log lines
+        html = html.replace(/^postgres-\d+\s+\|\s+(.+?)$/gm, 
+                            '<span style="color: #cc99ff;">postgres-1 | $1</span>');
+        
+        // Highlight flask_app log lines
+        html = html.replace(/^button_clicker_flask_app\s+\|\s+(.+?)$/gm, 
+                            '<span style="color: #66cc99;">button_clicker_flask_app | $1</span>');
+        
+        // Highlight local_stub log lines
+        html = html.replace(/^button_clicker_local_stub\s+\|\s+(.+?)$/gm, 
+                            '<span style="color: #ff9966;">button_clicker_local_stub | $1</span>');
+        
+        // Highlight error, warning, info, and success messages
+        html = html.replace(/\b(ERROR|ERRO|FATAL|EXCEPTION|FAILURE)\b/gi, '<span class="error">$1</span>');
+        html = html.replace(/\b(WARN|WARNING)\b/gi, '<span class="warning">$1</span>');
+        html = html.replace(/\b(INFO|INFORMATION)\b/gi, '<span class="info">$1</span>');
+        html = html.replace(/\b(SUCCESS|SUCCESSFUL)\b/gi, '<span class="success">$1</span>');
+        
+        // Highlight timestamps in brackets
+        html = html.replace(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}/g, 
+                            '<span style="color: #aaaaaa;">$&</span>');
+        
+        // Highlight UTC timestamps
+        html = html.replace(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} UTC/g, 
+                            '<span style="color: #aaaaaa;">$&</span>');
+        
+        element.innerHTML = html;
+    }
+    
+    // Format seconds to human-readable time
+    function formatSeconds(seconds) {
+        // Hours
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        
+        let timeStr = '';
+        if (hours > 0) {
+            timeStr += `${hours}h `;
+        }
+        if (minutes > 0 || hours > 0) {
+            timeStr += `${minutes}m `;
+        }
+        timeStr += `${secs}s`;
+        
+        return timeStr;
+    }
+    
+    // Show alert message
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // Insert before auth form or dashboard
+        if (authForm.style.display !== 'none') {
+            authForm.parentNode.insertBefore(alertDiv, authForm);
+        } else {
+            adminDashboard.parentNode.insertBefore(alertDiv, adminDashboard);
+        }
+        
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 5000);
+    }
+
+    // Snake Animation Functions
+    function startRandomSnakes() {
+        // Create a snake every 8-15 seconds
+        setInterval(() => {
+            if (Math.random() < 0.5) { // 50% chance each interval
+                createRandomSnake();
+            }
+        }, 15000);
+        
+        // Create initial snake
+        setTimeout(createRandomSnake, 2000);
+    }
+    
+    function createRandomSnake() {
+        const snakeContainer = document.getElementById('snake-container');
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        // Create snake elements
+        const snake = document.createElement('div');
+        snake.className = 'random-snake';
+        
+        const snakeHead = document.createElement('div');
+        snakeHead.className = 'snake-head';
+        
+        // Create 3-6 body segments
+        const numSegments = Math.floor(Math.random() * 4) + 3;
+        const segments = [];
+        
+        for (let i = 0; i < numSegments; i++) {
+            const segment = document.createElement('div');
+            segment.className = 'snake-body-segment';
+            segments.push(segment);
+            snake.appendChild(segment);
+        }
+        
+        // Create tail
+        const snakeTail = document.createElement('div');
+        snakeTail.className = 'snake-tail';
+        
+        // Add all parts to snake
+        snake.appendChild(snakeHead);
+        snake.appendChild(snakeTail);
+        
+        // Determine start position (edges of screen)
+        let startX, startY, destX, destY;
+        
+        // Randomly choose which edge to start from
+        const edge = Math.floor(Math.random() * 4);
+        switch(edge) {
+            case 0: // Top edge
+                startX = Math.random() * windowWidth;
+                startY = -30;
+                destX = Math.random() * windowWidth;
+                destY = windowHeight + 30;
+                break;
+            case 1: // Right edge
+                startX = windowWidth + 30;
+                startY = Math.random() * windowHeight;
+                destX = -30;
+                destY = Math.random() * windowHeight;
+                break;
+            case 2: // Bottom edge
+                startX = Math.random() * windowWidth;
+                startY = windowHeight + 30;
+                destX = Math.random() * windowWidth;
+                destY = -30;
+                break;
+            case 3: // Left edge
+                startX = -30;
+                startY = Math.random() * windowHeight;
+                destX = windowWidth + 30;
+                destY = Math.random() * windowHeight;
+                break;
+        }
+        
+        // Set initial position
+        snake.style.left = `${startX}px`;
+        snake.style.top = `${startY}px`;
+        
+        // Add to container
+        snakeContainer.appendChild(snake);
+        
+        // Calculate movement
+        const duration = 12000 + Math.random() * 8000; // 12-20 seconds
+        const startTime = Date.now();
+        
+        // Previous positions for trailing effect
+        const positions = [{x: startX, y: startY}];
+        
+        // Animation function
+        function moveSnake() {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Calculate current position
+            const currentX = startX + (destX - startX) * progress;
+            const currentY = startY + (destY - startY) * progress;
+            
+            // Store position
+            positions.push({x: currentX, y: currentY});
+            
+            // Only keep recent positions
+            if (positions.length > numSegments + 2) {
+                positions.shift();
+            }
+            
+            // Update head position
+            snakeHead.style.left = `${currentX}px`;
+            snakeHead.style.top = `${currentY}px`;
+            
+            // Update body segments (follow the head with delay)
+            segments.forEach((segment, index) => {
+                const posIndex = Math.max(0, positions.length - 2 - index);
+                if (positions[posIndex]) {
+                    segment.style.left = `${positions[posIndex].x}px`;
+                    segment.style.top = `${positions[posIndex].y}px`;
+                }
+            });
+            
+            // Update tail position (follow the last segment)
+            const tailPosIndex = Math.max(0, positions.length - numSegments - 2);
+            if (positions[tailPosIndex]) {
+                snakeTail.style.left = `${positions[tailPosIndex].x}px`;
+                snakeTail.style.top = `${positions[tailPosIndex].y}px`;
+            }
+            
+            // Continue animation or clean up
+            if (progress < 1) {
+                requestAnimationFrame(moveSnake);
+            } else {
+                snake.remove();
+            }
+        }
+        
+        // Start animation
+        requestAnimationFrame(moveSnake);
+    }
+</script>
+
+</body>
+</html>

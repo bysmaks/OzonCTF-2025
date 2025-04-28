@@ -1,0 +1,16 @@
+[package]
+name = "ozon"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+prost = "0.13"
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+rand = "0.9.0"
+tonic = "0.12.3"
+redis = { version = "0.29.2", features = ["tokio-comp"] }
+anyhow = "1.0.97"
+csv = "1.3.1"
+
+[build-dependencies]
+tonic-build = "0.12.3"

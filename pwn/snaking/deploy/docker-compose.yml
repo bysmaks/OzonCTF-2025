@@ -1,0 +1,9 @@
+services:
+  snaking:
+    build: .
+    restart: unless-stopped
+    pids_limit: 512
+    mem_limit: 512M
+    cpus: 1
+    ports:
+      - "11331:11331"

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./backend
+    ports:
+      - "127.0.0.1:8010:8000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIRECT_TOKEN=${REDIRECT_TOKEN:-$(openssl rand -hex 16)}
+    depends_on:
+      internal:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      ctf-network:
+    restart: always
+
+  internal:
+    build: ./internal
+    environment:
+      - FLAG=ozonctf{ch41n_0f_vuln3r4b1l1t13s_3xpl01t3d}
+      - REDIRECT_TOKEN=${REDIRECT_TOKEN:-$(openssl rand -hex 16)}
+    networks:
+      ctf-network:
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/ || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  redis:
+    image: redis:alpine
+    networks:
+      - ctf-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    restart: always
+
+networks:
+  ctf-network:
+    driver: bridge

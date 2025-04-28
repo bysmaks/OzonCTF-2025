@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>c0ll3ct0r - Collect</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="top-bar">
+    <span class="url-counter">Собрано URL-ов: {{.urlCount}}</span>
+    <button class="logout-button animated-gradient">Выйти</button>
+</div>
+<header>
+    <h1 class="animated-gradient">c0ll3ct0r</h1>
+    <p>Отправляйте URL-ы и собирайте флаги!</p>
+</header>
+<main class="vertical">
+    <div>
+    <section class="form-container">
+        <h2>Отправить URL</h2>
+        <div class="error" id="collect-error"></div>
+        <form id="collect-form">
+            <input type="text" name="url" placeholder="URL" required>
+            <button type="submit" class="animated-gradient">Отправить</button>
+        </form>
+    </section>
+    </div>
+    <section class="flag-container">
+        <div class="flag-block">
+            <h3>Flag #1</h3>
+            <p>Флаг появится после отправки 1 млрд. уникальных url (уникальность на уровне домена)</p>
+            <div class="flag">
+                <span class="animated-gradient">{{.flag}}</span>
+            </div>
+        </div>
+        <div class="flag-block">
+            <h3>Flag #2</h3>
+            <p>Coming soon...</p>
+        </div>
+    </section>
+</main>
+<script src="/static/collect_script.js"></script>
+</body>
+</html>

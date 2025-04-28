@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile">
+    <h2>User Profile: {{ user_id }}</h2>
+    
+    <div class="profile-info">
+        <div class="info-item">
+            <span class="label">User ID:</span>
+            <span class="value">{{ user_id }}</span>
+        </div>
+        <div class="info-item">
+            <span class="label">Role:</span>
+            <span class="value">{{ role }}</span>
+        </div>
+    </div>
+    
+    {% if hint %}
+    <div class="hint">
+        <p>{{ hint }}</p>
+    </div>
+    {% endif %}
+    
+    <div class="profile-actions">
+        <button onclick="window.location.href='/profile/{{ user_id }}'" class="btn">
+            Refresh Profile
+        </button>
+    </div>
+</div>
+{% endblock %}
